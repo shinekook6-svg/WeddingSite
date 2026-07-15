@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation</title>
+    
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        /* --- Browser Tab Bar ကြောင့် Layout မပျက်စေရန် အခြေခံ Setup --- */
+        :root {
+            --vh: 1vh; /* JS ထဲကနေ dynamic တွက်ပေးမယ် */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Mobile Ripple ဖြတ်ရန် */
+        }
+
+        body, html {
+            width: 100%;
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
+            background-color: #0d0d0d;
+        }
+
+        /* --- LOADING SCREEN --- */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(var(--vh, 1vh) * 100);
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75)), url('MainWeddingP.jpg') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; 
+            align-items: center;
+            padding-bottom: calc(var(--vh, 1vh) * 22); 
+            z-index: 9999;
+        }
+
+        .powered-by {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4facfe; 
+            text-shadow: 0 0 10px rgba(79, 172, 254, 0.6); 
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            opacity: 0; 
+        }
+
+        .progress-container {
+            width: 280px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); 
+            box-shadow: 0 0 8px rgba(79, 172, 254, 0.8);
+        }
+
+        .percent-text {
+            font-size: 13px;
+            color: #8a99ad;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .continue-btn {
+            display: none; 
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border: 1px solid rgba(79, 172, 254, 0.5);
+            padding: 12px 35px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            background: #4facfe;
+            color: #000;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.7);
+            border-color: transparent;
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        #main-content {
+            display: none; 
+            width: 100%;
+            height: calc(var(--vh, 1vh) * 100);
+            flex-direction: column;
+            background-color: #FAF6F0; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* 📌 FIXED HEADER AREA */
+        .fixed-header {
+            width: 100%;
+            padding: calc(var(--vh, 1vh) * 3) 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #FAF6F0; 
+            border-bottom: 1px solid rgba(197, 160, 89, 0.5); 
+            z-index: 10;
+        }
+
+        .couple-card-frame {
+            width: 280px; 
+            height: 220px; 
+            border-radius: 24px; 
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(197, 160, 89, 0.6);
+            border: 3px solid #fff;
+            margin-bottom: calc(var(--vh, 1vh) * 2);
+        }
+
+        .couple-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
+
+        .names-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            gap: 15px; 
+            margin-bottom: 8px;
+            opacity: 0; 
+        }
+
+        .groom-name, .bride-name {
+            font-size: 16px; 
+            font-weight: 600;
+            color: #3D352E; 
+            letter-spacing: 1px;
+            white-space: nowrap; 
+        }
+
+        .and-symbol {
+            font-size: 14px;
+            color: #C5A059; 
+            font-weight: 500;
+        }
+
+        .invitation-sub {
+            font-size: 12px;
+            font-weight: 500;
+            color: #9C8E80;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0; 
+        }
+
+        /* 📌 SCROLLABLE BODY AREA */
+        .scrollable-body {
+            flex-grow: 1; 
+            width: 100%;
+            background-color: #FAF6F4;
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; 
+            padding-bottom: 80px; /* Tab Bar အတွက် နေရာချန်ထားခြင်း */
+        }
+
+        /* 📜 ညပ်ထည့်လိုက်သော စာသားအပိုင်း ဒီဇိုင်းများ */
+        .invitation-text-section {
+            text-align: center;
+            padding: 35px 20px;
+            color: #5D5245;
+        }
+        .parent-name { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+        .inner-groom, .inner-bride { font-size: 18px; font-weight: 600; color: #3D352E; margin: 4px 0; }
+        .inner-and { font-size: 14px; color: #C5A059; margin: 2px 0; }
+        .invitation-blessing { font-size: 12.5px; line-height: 1.8; margin-top: 15px; font-style: italic; color: #7A6F62; }
+
+        /* 📅 ရက်စွဲ BOX ဒီဇိုင်း (1.8.2026) */
+        .date-box-section {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0 25px 0;
+        }
+        .wedding-date-box {
+            background: rgba(252, 255, 255, 0.7);
+            border: 2px solid rgba(197, 160, 89, 0.5);
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.06);
+            width: 85%;
+            max-width: 300px;
+        }
+        .date-header { font-size: 10px; letter-spacing: 2px; color: #C5A059; font-weight: 700; margin-bottom: 8px; }
+        .date-main { display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 26px; font-weight: 700; color: #3D352E; }
+        .date-main .divider { color: #D5CBBF; font-weight: 300; }
+        .date-footer { font-size: 11px; color: #7A6F62; margin-top: 8px; letter-spacing: 1px; }
+
+        /* 📸 TOUCH SLIDE GALLERY ဒီဇိုင်း */
+        .gallery-section { padding: 15px 0 35px 0; text-align: center; }
+        .section-title { font-size: 14px; color: #3D352E; margin-bottom: 12px; letter-spacing: 1px; font-weight: 600; }
+        .gallery-carousel {
+            width: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory; 
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .gallery-carousel::-webkit-scrollbar { display: none; } 
+        .gallery-track { display: flex; gap: 12px; padding: 0 30px; }
+        .gallery-item {
+            flex: 0 0 75%; 
+            scroll-snap-align: center;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            aspect-ratio: 4/5; 
+            cursor: pointer;
+            background: #e4decb;
+            border: 2px solid #fff;
+        }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-hint { font-size: 10.5px; color: #9C8E80; margin-top: 8px; }
+
+        /* 🔍 LIGHTBOX (PHOTO FULL VIEW) */
+        .lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999;
+            visibility: hidden; opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .lightbox.active { visibility: visible; opacity: 1; }
+        .lightbox img { max-width: 90%; max-height: 85%; border-radius: 12px; }
+
+        /* 📌 FLOATING BOTTOM TAB BAR (အောက်ခြေတွင် အသေကပ်နေမည်) */
+        .bottom-tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 65px;
+            background: #ffffff;
+            box-shadow: 0 -5px 20px rgba(197, 160, 89, 0.1); 
+            border-top: 2px solid rgba(197, 160, 89, 0.5);
+            display: flex;
+            align-items: center;
+            z-index: 99; 
+            padding-bottom: env(safe-area-inset-bottom); 
+        }
+
+        .tab-btn {
+            flex: 1;
+            height: 100%;
+            border: none;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            gap: 2px;
+        }
+        .tab-icon { font-size: 16px; }
+        .tab-text { font-size: 11px; font-weight: 600; color: #5D5245; }
+        .tab-divider { width: 1px; height: 25px; background-color: rgba(197, 160, 89, 0.5); }
+/* --- TAB ACTIVE STYLE --- */
+.tab-btn.active .tab-icon {
+    transform: scale(1.2); /* Icon လေး နည်းနည်းကြီးလာမယ် */
+    filter: drop-shadow(0 2px 5px rgba(197, 160, 89, 0.4));
+}
+.tab-btn.active .tab-text {
+    color: #C5A059 !important; /* စာသားကို ရွှေရောင် ပြောင်းပစ်မယ် */
+    font-weight: 700;
+}
+.tab-btn {
+    transition: all 0.3s ease; /* ပြောင်းလဲမှု ညင်သာအောင် */
+}
+
+        /* 📌 POPUP PANELS SYSTEM (Header အောက်ကနေ ကွက်တိ ပေါ်လာမည်) */
+        .popup-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 90; /* Tab Bar ရဲ့အောက်၊ Scroll Area ရဲ့ အပေါ် */
+            visibility: hidden; 
+            pointer-events: none; /* ပိတ်ထားချိန် နောက်ကဟာ နှိပ်လို့ရအောင် */
+        }
+        .popup-panel.active { pointer-events: auto; }
+
+        .panel-content {
+            position: absolute;
+            bottom: 65px; /* Tab Bar ရဲ့ အပေါ်ကွက်တိ ကပ်နေရန် */
+            left: 0;
+            width: 100%;
+            max-height: 55vh; /* Header ကို သွားမဖုံးအောင် အမြင့်ထိန်းခြင်း */
+            background: #FAF6F0; 
+            border-radius: 24px 24px 0 0;
+            padding: 20px 20px 30px 20px;
+            transform: translateY(100%); 
+            box-shadow: 0 -8px 25px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .panel-handle { width: 35px; height: 4px; background: #D5CBBF; border-radius: 10px; margin: 0 auto 15px auto; }
+        .panel-title { font-size: 14px; font-weight: 600; color: #3D352E; text-align: center; margin-bottom: 15px; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 11px; font-weight: 600; color: #7A6F62; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid #D5CBBF; border-radius: 10px;
+            background: #ffff; font-size: 13px; outline: none;
+        }
+        .radio-choices { display: flex; gap: 8px; }
+        .choice-btn {
+            flex: 1; padding: 10px 5px; font-size: 11px; background: #ffffff;
+            border: 1px solid #D5CBBF; border-radius: 8px; color: #5D5245; cursor: pointer;
+        }
+        .choice-btn.active { border-color: #C5A059; background: #F4EFE6; color: #C5A059; font-weight: 600; }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #C5A059; color: #ffffff; border: none;
+            border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 5px;
+        }
+        /* --- TRADITIONAL LONG INVITATION STYLES --- */
+.family-side {
+    margin: 15px auto;
+    width: 90%;
+    max-width: 340px;
+}
+.relative-line {
+    font-size: 12.5px;
+    color: #6E6254;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+.relative-line strong {
+    color: #3D352E; /* အမည်တွေကို ပိုထင်ရှားအောင် Color နည်းနည်းရင့်ပေးတာ */
+    font-weight: 600;
+}
+.inner-groom, .inner-bride {
+    font-size: 19px;
+    font-weight: 700;
+    color: #3D352E;
+    margin: 15px 0 5px 0;
+    letter-spacing: 1px;
+}
+/* --- GIFT PANEL CUSTOM STYLES --- */
+.account-card {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: left;
+}
+.account-badge {
+    font-size: 11.5px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+.groom-badge { background: #e3edf7; color: #315a8f; }
+.bride-badge { background: #fcebf0; color: #a04262; }
+.account-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #4A4238;
+}
+.copy-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: all;
+}
+.copy-box:active { transform: scale(0.95); background: #f0f0f0; }
+.acc-no { font-weight: bold; font-family: monospace; }
+.copy-lbl { color: #C5A059; margin-left: 4px; }
+.upload-btn {
+    background: #f5f5f5;
+    border: 1px dashed #C5A059;
+    color: #6E6254;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+}
+/* --- BANK IMAGE ICON STYLES --- */
+.acc-title {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* ပုံနဲ့ စာသားကြား အကွာအဝေး */
+}
+.bank-icon {
+    width: 18px;  /* ခပ်သေးသေး Size ညှိထားတာ */
+    height: 18px;
+    object-fit: contain;
+}
+
+    </style>
+</head>
+<body>
+  <!-- 🎵 Background Music (Loop ပါပတ်အောင် လုပ်ထားသည်) -->
+    <audio id="bg-music" src="WeddingSong.mp3" loop></audio>
+
+    <!-- ၁။ LOADING SCREEN -->
+    <div id="loader">
+        <div class="powered-by" id="karo-text">Powered By Karo</div>
+        <div class="progress-container" id="bar-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div class="percent-text" id="percent-text">0%</div>
+        <button class="continue-btn" id="continueBtn" onclick="enterWebsite()">Continue</button>
+    </div>
+    
+    <!-- ၂။ MAIN CONTENT -->
+    <div id="main-content">
+        
+        <!-- 📌 FIXED HEADER AREA (အပေါ်တွင် အသေကပ်နေမည်) -->
+        <div class="fixed-header" id="fixed-header">
+            <div class="couple-card-frame">
+                <img src="MainWeddingP.jpg" alt="Wedding Couple" class="couple-card-img" id="hero-img">
+            </div>
+            <div class="names-row" id="couple-names">
+                <div class="groom-name">ကိုရှိုင်းဝင်းအောင်</div>
+                <div class="and-symbol">နှင့်</div>
+                <div class="bride-name">နော်အီရေးနီလင်း</div>
+            </div>
+            <p class="invitation-sub" id="invitation-sub">တို့၏ မင်္ဂလာဆောင် ဖိတ်ကြားလွှာ 💌</p>
+        </div>
+
+        <!-- 📌 SCROLLABLE CONTENT AREA -->
+        <div class="scrollable-body" id="scrollable-body">
+            
+            <!-- 🌸 အပိုင်း (က) - ဖိတ်ကြားလွှာ စာသားများ -->
+           <section class="invitation-text-section">
+    
+    <!-- 🤵 ယောက်ျားလေးဘက်မှ မိဘဆွေမျိုးများ -->
+    <div class="family-side">
+        <p class="relative-line">ပဲခူးတိုင်းဒေသကြီး၊ သာယာဝတီမြို့နယ်သင်တောရိုးကျေးရွာနေ <br><strong>(ဦးအောင်မြင့်) + ဒေါ်အုံးမြင့်</strong> တို့၏ မြေး</p>
+        <p class="relative-line">မိုးကုတ်မြို့နယ်နေ <br><strong>(ဦးသားကြီး)+ (ဒေါ်ချိုချိုအောင်)</strong> တို့၏ တူ</p>
+        <p class="relative-line">ပဲခူးတိုင်းဒေသကြီး၊ ပဲခူးမြို့နယ်၊ သနပ်ပင်ရပ်ကွက်နေ <br><strong>ဦးအေးကို + ဒေါ်ဝေဝေအောင်</strong> တို့၏ တူ</p>
+        <p class="relative-line">ရှုမ်းပြည်နယ်တောင်ပိုင်း၊ ဟဲဟိုးမြို့နယ်နေ <br><strong>ဦးအောင်ဝင်းသိန်း + ဒေါ်အေးအေးအောင်</strong> တို့၏ သားကြီး</p>
+        <h4 class="inner-groom">ကိုရှိုင်းဝင်းအောင်</h4>
+    </div>
+    
+    <!-- 🤝 ကြားခံစာသား -->
+    <p class="inner-and">နှင့်</p>
+    
+    <!-- 👰 မိန်းကလေးဘက်မှ မိဘဆွေမျိုးများ -->
+    <div class="family-side">
+        <p class="relative-line">ပဲခူးတိုင်းဒေသကြီး၊ သာယာဝတီမြို့နယ်နေ <br><strong> (ဆရာတော် ဦးဂျွန်အေးမောင်)+ ဒေါ်မားမီ</strong> တို့၏ မြေးမ</p>
+        <p class="relative-line">Singapore နိုင်ငံ နေ <br><strong>နော်လူစီလင်း</strong> ၏ ညီမ</p>
+        <p class="relative-line">ပဲခူးတိုင်းဒေသကြီး၊သာယာဝတီမြို့နယ် နေ <br><strong>ဦးဇော်လင်း + နော်ဂရိတ်စ်လတ်</strong> တို့၏ သမီးအငယ်ဆုံး</p>
+        <h4 class="inner-bride">နော်အီရေးနီလင်း</h4>
+    </div>
+
+    <!-- 🌸 နိဂုံးချုပ် ဖိတ်ကြားစာ -->
+    <p class="invitation-blessing">
+        တို့၏ မင်္ဂလာလက်ထပ်ပွဲသို့ ဤဖိတ်စာလေးဖြင့် အလေးအမြတ် ထား၍ ဖိတ်ကြားအပ်ပါသည်။
+    </p>
+</section>
+
+            <!-- 📅 အပိုင်း (ခ) - မင်္ဂလာရက်စွဲပြ Box (1.8.2026) -->
+            <section class="date-box-section">
+                <div class="wedding-date-box">
+                    <div class="date-header">WEDDING DATE</div>
+                    <div class="date-main">
+                        <span class="day">26</span>
+                        <span class="divider">/</span>
+                        <span class="month">04</span>
+                        <span class="divider">/</span>
+                        <span class="year">2024</span>
+                    </div>
+                    <div class="date-footer">SATURDAY | 9:00 AM</div>
+                </div>
+            </section>
+
+            <!-- 📸 အပိုင်း (ဂ) - ၅ ပုံပါ Touch Slide Gallery -->
+            <section class="gallery-section">
+                <h5 class="section-title">🌼 Sweet Memories 🌼</h5>
+                <div class="gallery-carousel">
+                    <div class="gallery-track">
+                        <!-- ပုံလမ်းကြောင်းများကို စိတ်ကြိုက်ပြောင်းပါ -->
+                        <div class="gallery-item" onclick="viewImage(this)"><img src="Wedding1.jpg" alt="1"></div>
+                        <div class="gallery-item" onclick="viewImage(this)"><img src="Wedding2.jpg" alt="2"></div>
+                        <div class="gallery-item" onclick="viewImage(this)"><img src="Wedding3.jpg" alt="3"></div>
+                        <div class="gallery-item" onclick="viewImage(this)"><img src="Wedding4.jpg" alt="4"></div>
+                        <div class="gallery-item" onclick="viewImage(this)"><img src="Wedding5.jpg" alt="5"></div>
+                    </div>
+                </div>
+                <p class="gallery-hint"> လက်ဖြင့် ဘေးသို့ ပွတ်ဆွဲ၍ ကြည့်နိုင်သည် ➡</p>
+            </section>
+        </div>
+
+        <!-- 📌 FLOATING BOTTOM TAB BAR (အမြဲကပ်နေမည့် ခလုတ် ၃ ခု) -->
+<div class="bottom-tab-bar">
+    <button id="tab-rsvp" class="tab-btn" onclick="togglePanel('rsvp-panel', this)">
+        <span class="tab-icon">📅</span>
+        <span class="tab-text">RSVP တင်ရန်</span>
+    </button>
+    <div class="tab-divider"></div>
+    <button id="tab-location" class="tab-btn" onclick="togglePanel('location-panel', this)">
+        <span class="tab-icon">📍</span>
+        <span class="tab-text">တည်နေရာ</span>
+    </button>
+    <div class="tab-divider"></div>
+    <button id="tab-gift" class="tab-btn" onclick="togglePanel('gift-panel', this)">
+        <span class="tab-icon">💝</span>
+        <span class="tab-text">လက်ဖွဲ့ရန်</span>
+    </button>
+</div>
+
+        
+        <!-- 📅 RSVP PANEL -->
+<div class="popup-panel" id="rsvp-panel">
+    <div class="panel-content">
+        <div class="panel-handle" onclick="togglePanel('rsvp-panel')"></div>
+        <h3 class="panel-title">📅 RSVP တက်ရောက်မှု အတည်ပြုရန်</h3>
+        
+        <!-- ၁။ ဧည့်သည်အမည် (မဖြစ်မနေ ဖြည့်ရမည်) -->
+        <div class="form-group">
+            <label>ဧည့်သည်တော် နာမည် <span style="color:red;">*</span></label>
+            <input type="text" id="rsvp-name" placeholder="လူကြီးမင်း နာမည် ရေးပေးပါ">
+        </div>
+
+        <!-- ၂။ နေရပ်လိပ်စာ (Optional) -->
+        <div class="form-group">
+            <label>နေရပ်လိပ်စာ (မြို့နယ် သို့မဟုတ် လိပ်စာအပြည့်အစုံ)</label>
+            <input type="text" id="rsvp-address" placeholder="ဥပမာ - သာယာဝတီမြို့နယ်">
+        </div>
+
+        <!-- ၃။ Telegram Username (Optional) -->
+        <div class="form-group">
+            <label>Telegram Username</label>
+            <input type="text" id="rsvp-telegram" placeholder="ဥပမာ - @Karo_Dev">
+        </div>
+
+        <!-- ၄။ တက်ရောက်နိုင်မည့် အခြေအနေ (ရွေးချယ်မှု ပြင်ဆင်ထားသည်) -->
+        <div class="form-group">
+            <label>တက်ရောက်နိုင်မည့် အခြေအနေ</label>
+            <div class="radio-choices">
+                <button class="choice-btn active" data-status="attend">👏 တက်ရောက်မည်</button>
+                <button class="choice-btn" data-status="decline">✉️ မတက်ရောက်နိုင်ပါ</button>
+            </div>
+        </div>
+
+        <!-- ၅။ DYNAMIC REASON BOX (မတက်ရောက်နိုင်ပါ ရွေးမှ Slide Up ဖြစ်ပြီး ပေါ်လာမည်) -->
+        <div class="form-group" id="decline-reason-group" style="display: none; opacity: 0;">
+            <label>ဘာကြောင့် မတက်ရောက်နိုင်ပါသလဲ ခင်ဗျာ။</label>
+            <textarea id="rsvp-reason" rows="2" placeholder="အကြောင်းပြချက်လေး အနည်းငယ် ရေးပေးခဲ့ပါ..."></textarea>
+        </div>
+
+        <!-- Validation Error Message ပြရန် နေရာ -->
+        <p id="rsvp-error" style="color: #d9534f; font-size: 11px; text-align: center; margin-bottom: 8px; display: none;"></p>
+
+        <button class="submit-btn" onclick="validateAndSubmitRSVP()">အတည်ပြုမည်</button>
+    </div>
+</div>
+
+        <!-- 📍 LOCATION PANEL -->
+        <div class="popup-panel" id="location-panel">
+            <div class="panel-content">
+                <div class="panel-handle" onclick="togglePanel('location-panel')"></div>
+                <h3 class="panel-title">📍 မင်္ဂလာပွဲကျင်းပမည့် တည်နေရာ</h3>
+                <p style="font-size:12px; color:#5D5245; text-align:center; margin-bottom:15px; line-height:1.6;">
+                    ရန်ကုန်မြို့၊ နိုဗိုတယ်ဟိုတယ် (Novotel Ballroom)<br>မြေပုံအတိုင်း လွယ်ကူစွာ လာရောက်နိုင်ပါသည်။
+                </p>
+                <!-- Google Map Embed သို့မဟုတ် ခလုတ် ထည့်ရန်နေရာ -->
+                <button class="submit-btn" onclick="window.open('https://maps.google.com')">Google Maps ဖြင့်ကြည့်မည်</button>
+            </div>
+        </div>
+
+        <!-- 💝 GIFT PANEL -->
+<div class="popup-panel" id="gift-panel">
+    <div class="panel-content">
+        <div class="panel-handle" onclick="togglePanel('gift-panel')"></div>
+        <h3 class="panel-title">🎁 မင်္ဂလာလက်ဖွဲ့ရန်နှင့် ဆုတောင်းလွှာ</h3>
+        
+        <!-- QR Codes & Accounts Section -->
+        <div class="scrollable-form-area" style="max-height: 42vh; overflow-y: auto; padding-right: 5px;">
+            <p class="gift-blessing" style="font-size: 12px; color: #6E6254; text-align: center; margin-bottom: 15px; line-height: 1.6;">
+                "နှစ်ဖက်သော မိဘဆွေမျိုးများနှင့် သတို့သား၊ သတို့သမီးတို့အား <br> မင်္ဂလာလက်ဖွဲ့ အလှူတော်ငွေများ ပေးပို့ဆုတောင်းနိုင်ပါသည်။"
+            </p>
+
+            <!-- သတို့သား ဘဏ်အကောင့်များ -->
+            <div class="account-card">
+                <div class="account-badge groom-badge">🤵 သတို့သားဘက်မှ အကောင့်များ</div>
+                <div class="account-row">
+                    <span class="acc-title">
+                        <img src="KPay.jpg" class="bank-icon" alt="KPay"> KBZ (Shine Win Aung)
+                    </span>
+                    <div class="copy-box" onclick="copyToClipboard('09752803124', this)">
+                        <span class="acc-no">09752803124</span> <small class="copy-lbl">📋 Copy</small>
+                    </div>
+                </div>
+                <div class="account-row">
+                    <span class="acc-title">
+                        <img src="WavePay.jpg" class="bank-icon" alt="Wave"> Wave (Naw Rosi Lin)
+                    </span>
+                    <div class="copy-box" onclick="copyToClipboard('09752803124', this)">
+                        <span class="acc-no">09752803124</span> <small class="copy-lbl">📋 Copy</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- သတို့သမီး ဘဏ်အကောင့်များ -->
+            <div class="account-card" style="margin-top: 12px;">
+                <div class="account-badge bride-badge">👰 သတို့သမီးဘက်မှ အကောင့်များ</div>
+                <div class="account-row">
+                    <span class="acc-title">
+                        <img src="KPay.jpg" class="bank-icon" alt="KPay"> KBZ (ဒေါ်အီရေးနီလင်း)
+                    </span>
+                    <div class="copy-box" onclick="copyToClipboard('09xxxxxx', this)">
+                        <span class="acc-no">09xxxxxx</span> <small class="copy-lbl">📋 Copy</small>
+                    </div>
+                </div>
+                <div class="account-row">
+                    <span class="acc-title">
+                        <img src="WavePay.jpg" class="bank-icon" alt="Wave"> Wave (ဒေါ်အီရေးနီလင်း)
+                    </span>
+                    <div class="copy-box" onclick="copyToClipboard('09xxxxxx', this)">
+                        <span class="acc-no">09xxxxxx</span> <small class="copy-lbl">📋 Copy</small>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed #C5A059; margin: 15px 0;">
+
+            <!-- ဧည့်သည်အချက်အလက် ဖြည့်ရန် Form -->
+            <div class="form-group">
+                <label>ဂုဏ်ပြုလက်ဖွဲ့/ဆုတောင်းရှင် နာမည် <span style="color:red;">*</span></label>
+                <input type="text" id="gift-name" placeholder="လူကြီးမင်း နာမည် ရေးပေးပါ">
+            </div>
+
+            <div class="form-group">
+                <label>နေရပ်လိပ်စာ</label>
+                <input type="text" id="gift-address" placeholder="ဥပမာ - သာယာဝတီမြို့နယ်">
+            </div>
+
+            <div class="form-group">
+                <label>Telegram Username</label>
+                <input type="text" id="gift-telegram" placeholder="ဥပမာ - @Karo_Dev">
+            </div>
+            <!-- ✍️ ဆုတောင်းစကားလွှာ (Example Chips များဖြင့် မွမ်းမံထားသည်) -->
+<div class="form-group">
+    <label>သတို့သား/သမီးထံ ပေးပို့မည့် ဆုတောင်းစကားလွှာ <span style="color:red;">*</span></label>
+    
+    <!-- ⚡ အမြန်ရွေးချယ်ရန် Example စာသား ခလုတ်လေးများ -->
+    <div class="wish-chips-container" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+        <button type="button" class="wish-chip" onclick="quickWish('မင်္ဂလာနှစ်ဦးဖြစ်ပါစေ၊ ရာသက်ပန် ရွှေလက်တွဲနိုင်ကြပါစေ။')" style="padding: 6px 10px; font-size: 11px; background: #FAF6F0; border: 1px solid #C5A059; border-radius: 20px; color: #5D5245; cursor: pointer; transition: all 0.2s;">👫 ရာသက်ပန်တွဲနိုင်ပါစေ</button>
+        <button type="button" class="wish-chip" onclick="quickWish('တစ်ယောက်ကိုတစ်ယောက် နားလည်ခွင့်လွှတ်ပြီး ပျော်ရွှင်စရာ မိသားစုဘဝလေး တည်ဆောက်နိုင်ပါစေ။')" style="padding: 6px 10px; font-size: 11px; background: #FAF6F0; border: 1px solid #C5A059; border-radius: 20px; color: #5D5245; cursor: pointer; transition: all 0.2s;">🏡 ပျော်ရွှင်စရာမိသားစု</button>
+        <button type="button" class="wish-chip" onclick="quickWish('အိုအောင်မင်းအောင် ပေါင်းဖက်ပြီး စီးပွားလာဘ်လာဘများ ဒီရေအလား တိုးတက်ပါစေ။')" style="padding: 6px 10px; font-size: 11px; background: #FAF6F0; border: 1px solid #C5A059; border-radius: 20px; color: #5D5245; cursor: pointer; transition: all 0.2s;">💵 စီးပွားတိုးပါစေကြောင်း</button>
+        <button type="button" class="wish-chip" onclick="quickWish('မိဘ ဆရာသမားတို့၏ ဆုံးမစကားတို့ကို နားထောင်ကြသော သားသမီးရတနာလေးများ ထွန်းကားကြပါစေ။')" style="padding: 6px 10px; font-size: 11px; background: #FAF6F0; border: 1px solid #C5A059; border-radius: 20px; color: #5D5245; cursor: pointer; transition: all 0.2s;">👶 သားသမီး ထွန်းကားပါစေကြောင်း</button>
+    </div>
+
+    <textarea id="gift-blessing-text" rows="3" placeholder="အပေါ်မှ စာသားများကို နှိပ်၍ သို့မဟုတ် မိမိစိတ်ကြိုက် ရေးသားနိုင်ပါသည်..."></textarea>
+</div>
+            <!-- Screenshot အပ်လုပ်တင်ရန် နေရာ (မဖြစ်မနေ မဟုတ်တော့ပါ Optional ဖြစ်သွားပြီ) -->
+            <div class="form-group">
+                <label>ငွေလွှဲပြောင်းမှု Screenshot (ငွေလွှဲခဲ့လျှင် တင်ရန်)</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="gift-ss" accept="image/*" style="display: none;" onchange="updateFileName(this)">
+                    <button class="upload-btn" onclick="document.getElementById('gift-ss').click()">📸 ပုံရွေးချယ်ရန်</button>
+                    <span id="file-name-lbl" style="font-size: 11px; color: #888; margin-top: 5px; display: block;">လူကြီးမင်း၏ ရွေးချယ်ထားသော ပုံမရှိသေးပါ</span>
+                </div>
+            </div>
+        </div>
+
+        <p id="gift-error" style="color: #d9534f; font-size: 11px; text-align: center; margin-top: 6px; margin-bottom: 6px; display: none;"></p>
+
+        <button class="submit-btn" onclick="validateAndSubmitGift()">ပေးပို့မည်</button>
+    </div>
+</div>
+
+    </div>
+
+    <!-- 🔍 LIGHTBOX OVERLAY -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Full View">
+    </div>
+
+    <script>
+        // --- MOBILE VIEWPORT FIX ---
+        function resetViewportHeight() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        window.addEventListener('resize', resetViewportHeight);
+        resetViewportHeight();
+
+        // --- PRELOAD LOGIC ---
+        const assetsToLoad = ['MainWeddingP.jpg'];
+        let loadedCount = 0;
+        let realProgress = 0;
+        let fakeProgress = 0;
+        const totalAssets = assetsToLoad.length;
+        const minimumFakeTime = 2000; 
+        let startTime = Date.now();
+
+        gsap.to("#karo-text", { opacity: 1, y: 0, duration: 1, delay: 0.2 });
+
+        function startPreloader() {
+            if (totalAssets === 0) { showContinueButton(); return; }
+            assetsToLoad.forEach(path => {
+                const img = new Image();
+                img.src = path;
+                img.onload = assetLoaded;
+                img.onerror = assetLoaded;
+            });
+        }
+
+        function assetLoaded() {
+            loadedCount++;
+            realProgress = Math.round((loadedCount / totalAssets) * 100);
+        }
+
+        let progressInterval = setInterval(() => {
+            let elapsedTime = Date.now() - startTime;
+            fakeProgress = Math.min(100, Math.round((elapsedTime / minimumFakeTime) * 100));
+            let finalProgress = Math.min(fakeProgress, realProgress || fakeProgress);
+
+            document.getElementById('progress').style.width = finalProgress + '%';
+            document.getElementById('percent-text').innerText = finalProgress + '%';
+
+            if (finalProgress >= 100) {
+                clearInterval(progressInterval);
+                showContinueButton();
+            }
+        }, 30);
+
+        function showContinueButton() {
+            gsap.timeline()
+                .to("#bar-container, #percent-text", { opacity: 0, duration: 0.4, y: 10, stagger: 0.1 })
+                .set("#bar-container, #percent-text", { display: "none" })
+                .set("#continueBtn", { display: "block", opacity: 0, y: 15 })
+                .to("#continueBtn", { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.7)" });
+        }
+
+        function enterWebsite() {
+           // 🎵 Continue နှိပ်လိုက်တာနဲ့ သီချင်းကို တန်းပြီး Play ခိုင်းခြင်း
+    const music = document.getElementById('bg-music');
+    if (music) {
+        music.play().catch(error => {
+            console.log("Audio play standard block by browser:", error);
+        });
+    }
+            gsap.timeline()
+                .to("#loader", { 
+                    opacity: 0, duration: 0.8, ease: "power2.out",
+                    onComplete: () => { document.getElementById('loader').style.display = 'none'; }
+                })
+                .set("#main-content", { display: "flex" })
+                .from("#hero-img", { scale: 1.15, opacity: 0, duration: 1.5, ease: "power2.out" }, "-=0.3")
+                .to("#couple-names", { opacity: 1, y: -5, duration: 1, ease: "power3.out" }, "-=0.8")
+                .to("#invitation-sub", { opacity: 1, y: -3, duration: 0.8, ease: "power2.out" }, "-=0.4");
+        }
+
+        window.onload = () => { startPreloader(); };
+
+        // --- GALLERY LIGHTBOX LOGIC ---
+        function viewImage(element) {
+            const imgSrc = element.querySelector('img').src;
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+
+        // --- GSAP POPUP PANEL INTERACTION LOGIC ---
+let activePanelId = null;
+
+function togglePanel(panelId, buttonElement) {
+    const panel = document.getElementById(panelId);
+    const content = panel.querySelector('.panel-content');
+
+    // Tab အားလုံးထံက active class တွေကို အရင်လိုက်ဖျောက်မယ်
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    if (activePanelId && activePanelId !== panelId) {
+        closeActivePanel();
+    }
+
+    if (activePanelId === panelId) {
+        closeActivePanel();
+    } else {
+        activePanelId = panelId;
+        panel.classList.add('active');
+        
+        // နှိပ်လိုက်တဲ့ Tab ခလုတ်ကို active ပေးလိုက်တာ
+        if(buttonElement) buttonElement.classList.add('active');
+        
+        gsap.set(panel, { visibility: 'visible' });
+        gsap.to(content, { y: 0, duration: 0.5, ease: "power3.out" });
+    }
+}
+
+function closeActivePanel() {
+    if (!activePanelId) return;
+    const panel = document.getElementById(activePanelId);
+    const content = panel.querySelector('.panel-content');
+    
+    activePanelId = null;
+
+    // Panel ပိတ်သွားတဲ့အတွက် အောက်က Tab တွေအားလုံးကို active status ပြန်ဖြုတ်မယ်
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    gsap.to(content, { 
+        y: "100%", 
+        duration: 0.4, 
+        ease: "power3.in",
+        onComplete: () => {
+            panel.classList.remove('active');
+            gsap.set(panel, { visibility: 'hidden' });
+        }
+    });
+}
+
+        // ==========================================
+// 1. RSVP BUTTON TOGGLE & DYNAMIC BOX LOGIC
+// ==========================================
+document.querySelectorAll('#rsvp-panel .choice-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // active highlight ဖြတ်/ထည့် လုပ်ခြင်း
+        this.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const status = this.getAttribute('data-status');
+        const reasonGroup = document.getElementById('decline-reason-group');
+
+        if (status === 'decline') {
+            // "မတက်ရောက်နိုင်ပါ" ရွေးလျှင် Reason Box ကို dynamic ပြသခြင်း
+            reasonGroup.style.display = 'block'; // Block သို့မဟုတ် Flex မင်း CSS အတိုင်းပြောင်းနိုင်သည်
+            gsap.to(reasonGroup, { opacity: 1, duration: 0.3, y: 0, ease: "power2.out" });
+        } else {
+            // "တက်ရောက်မည်" ပြန်ရွေးလျှင် ဖျောက်ခြင်း
+            gsap.to(reasonGroup, { 
+                opacity: 0, 
+                duration: 0.2, 
+                onComplete: () => { reasonGroup.style.display = 'none'; }
+            });
+        }
+    });
+});
+
+// ==========================================
+// 2. VALIDATION & TG BOT DIRECT SUBMIT LOGIC
+// ==========================================
+function validateAndSubmitRSVP() {
+    const CLIENT_CHAT_IDS = ['6870403909', '5223310054']; 
+    const TELEGRAM_BOT_TOKEN = '8614106729:AAFCTQG3b5nyzi1O6LlzNmdsPYfYbY1HWao';
+
+    const name = document.getElementById('rsvp-name').value.trim();
+    const address = document.getElementById('rsvp-address').value.trim();
+    const telegram = document.getElementById('rsvp-telegram').value.trim();
+    
+    const activeBtn = document.querySelector('#rsvp-panel .choice-btn.active');
+    const status = activeBtn.getAttribute('data-status');
+    const reason = document.getElementById('rsvp-reason').value.trim();
+    
+    const errorEl = document.getElementById('rsvp-error');
+    errorEl.style.display = 'none';
+
+    // နာမည်စစ်ဆေးခြင်း
+    if (!name) {
+        showRSVPError("ကျေးဇူးပြု၍ ဧည့်သည်တော် နာမည် ဖြည့်ပေးပါ။");
+        return;
+    }
+    
+    // လိပ်စာ သို့မဟုတ် Telegram တစ်ခုခု ဖြည့်မဖြည့်စစ်ဆေးခြင်း
+    if (!address && !telegram) {
+        showRSVPError("နေရပ်လိပ်စာ သို့မဟုတ် Telegram Username အနည်းဆုံး တစ်ခုတော့ ဖြည့်ပေးပါ ခင်ဗျာ။");
+        return;
+    }
+
+    // မတက်ရောက်နိုင်ပါ ရွေးထားပြီး အကြောင်းပြချက် မဖြည့်ရသေးရင် တားမြစ်ခြင်း
+    if (status === 'decline' && !reason) {
+        showRSVPError("ဘာကြောင့် မတက်ရောက်နိုင်တာလဲဆိုတာ အကြောင်းပြချက်လေး ဖြည့်ပေးပါဦး လူကြီးမင်း ခဗျာ");
+        return;
+    }
+
+    // ခလုတ်ကို Loading အဖြစ် ပြောင်းလဲခြင်း
+    const submitBtn = document.querySelector('#rsvp-panel .submit-btn');
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = "ပေးပို့နေပါသည် ⏳..."; // Emoji လေးနဲ့ ပိုမိုက်အောင် လုပ်လိုက်မယ်
+
+    // Telegram ပို့မည့် စာသား Format (HTML ဖြင့် အစားထိုးခြင်း)
+    let telegramText = `🔔 <b>RSVP အသစ်ရရှိပါသည်</b> 🔔\n\n`;
+    telegramText += `👤 <b>အမည်:</b> ${escapeHTML(name)}\n`;
+    telegramText += `📍 <b>လိပ်စာ:</b> ${address ? escapeHTML(address) : "မဖော်ပြထားပါ"}\n`;
+    telegramText += `✈️ <b>Telegram:</b> ${telegram ? escapeHTML(telegram) : "မဖော်ပြထားပါ"}\n`;
+    
+    if (status === 'attend') {
+        telegramText += `📢 <b>အခြေအနေ:</b> 🌸 တက်ရောက်မည်\n`;
+    } else {
+        telegramText += `📢 <b>အခြေအနေ:</b> ❌ မတက်ရောက်နိုင်ပါ\n`;
+        telegramText += `📝 <b>အကြောင်းပြချက်:</b> ${reason}\n`;
+    }
+
+    // API Call Requests တည်ဆောက်ခြင်း
+    const requests = CLIENT_CHAT_IDS.map(chatId => {
+        return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: telegramText,
+                parse_mode: 'HTML' // HTML ပြောင်းလိုက်ပြီမို့ Unicode / Special character တွေကြောင့် Crash မဖြစ်တော့ဘူး
+            })
+        });
+    });
+
+    // ဒေတာ ပို့ခြင်းလုပ်ငန်းစဉ်
+    Promise.all(requests)
+    .then(responses => {
+        const allOk = responses.every(res => res.ok);
+        
+        if (allOk) {
+            alert(`RSVP တင်ခြင်း အောင်မြင်ပါသည်။ ကျေးဇူးတင်ပါသည် ခဗျာ။🥰`);
+            
+            // Value များ ပြန်ရှင်းထုတ်ခြင်း
+            document.getElementById('rsvp-name').value = '';
+            document.getElementById('rsvp-address').value = '';
+            document.getElementById('rsvp-telegram').value = '';
+            document.getElementById('rsvp-reason').value = '';
+            
+            // "မတက်ရောက်နိုင်ပါ" ပွင့်နေရင် ပြန်ဖျောက်ထားခဲ့မယ်
+            document.getElementById('decline-reason-group').style.display = 'none';
+            document.getElementById('decline-reason-group').style.opacity = 0;
+            
+            // Default "တက်ရောက်မည်" ခလုတ်ကို ပြန် Active ပေးထားမယ်
+            document.querySelectorAll('#rsvp-panel .choice-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#rsvp-panel .choice-btn[data-status="attend"]').classList.add('active');
+            
+            closeActivePanel();
+        } else {
+            throw new Error('Telegram API key သို့မဟုတ် User ID မှားယွင်းနေပုံရသည်။');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showRSVPError("စနစ်ချို့ယွင်းမှု ရှိနေပါသည်။ Bot Token သို့မဟုတ် User ID များကို ကုဒ်ထဲတွင် စစ်ဆေးပါ။");
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalBtnText;
+    });
+}
+
+function showRSVPError(message) {
+    const errorEl = document.getElementById('rsvp-error');
+    errorEl.innerText = message;
+    errorEl.style.display = 'block';
+    gsap.fromTo(errorEl, { x: -10 }, { x: 10, duration: 0.1, repeat: 3, yoyo: true });
+}
+// --- ၁။ CLICK TO COPY FUNCTION ---
+function copyToClipboard(text, element) {
+    navigator.clipboard.writeText(text).then(() => {
+        const lbl = element.querySelector('.copy-lbl');
+        const originalText = lbl.innerText;
+        lbl.innerText = "✓ Copied";
+        lbl.style.color = "green";
+        setTimeout(() => {
+            lbl.innerText = originalText;
+            lbl.style.color = "#C5A059";
+        }, 1500);
+    }).catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+// --- ၂။ UPDATE FILE NAME LABEL ---
+function updateFileName(input) {
+    const lbl = document.getElementById('file-name-lbl');
+    if (input.files.length > 0) {
+        lbl.innerText = `📁 ${input.files[0].name}`;
+        lbl.style.color = "#3D352E";
+    } else {
+        lbl.innerText = "ရွေးချယ်ထားသော ပုံမရှိသေးပါ";
+        lbl.style.color = "#888";
+    }
+}
+
+// --- ၃။ VALIDATE & SUBMIT GIFT TO TELEGRAM VIA SENDPHOTO ---
+function validateAndSubmitGift() {
+    const CLIENT_CHAT_IDS = ['6870403909', '5223310054']; 
+    const TELEGRAM_BOT_TOKEN = '8614106729:AAFCTQG3b5nyzi1O6LlzNmdsPYfYbY1HWao'; 
+
+    const name = document.getElementById('gift-name').value.trim();
+    const address = document.getElementById('gift-address').value.trim();
+    const telegram = document.getElementById('gift-telegram').value.trim();
+    const blessing = document.getElementById('gift-blessing-text').value.trim();
+    const fileInput = document.getElementById('gift-ss');
+    
+    const errorEl = document.getElementById('gift-error');
+    errorEl.style.display = 'none';
+
+     // Validation Rules (ဆုတောင်းစာကို မဖြစ်မနေ ဖြည့်ခိုင်းခြင်း)
+    if (!name) {
+        showGiftError("ကျေးဇူးပြု၍ လူကြီးမင်း နာမည် ဖြည့်ပေးပါ ခဗျာ။");
+        return;
+    }
+    if (!address && !telegram) {
+        showGiftError("နေရပ်လိပ်စာ သို့မဟုတ် Telegram Username အနည်းဆုံး တစ်ခု ဖြည့်ပေးပါ။");
+        return;
+    }
+    if (!blessing) {
+        showGiftError("သတို့သား/သမီးတို့အတွက် မင်္ဂလာဆုတောင်းစကားလေး ရေးပေးပါဦး ခဗျာ။ (အပေါ်က Example များကို နှိပ်နိုင်ပါသည်)");
+        return;
+    }
+
+    // Button Loading State
+    const submitBtn = document.querySelector('#gift-panel .submit-btn');
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = "ပေးပို့နေပါသည် ⏳...";
+
+    const hasPhoto = fileInput.files.length > 0;
+    let requests = [];
+
+    if (hasPhoto) {
+    // --- 📸 ပုံပါလျှင်: HTML tag များဖြင့် ပြောင်းလဲခြင်း ---
+    let captionText = `🎁 <b>မင်္ဂလာလက်ဖွဲ့အလှူတော် ရရှိပါသည်</b> 🎁\n\n`;
+    captionText += `👤 <b>အလှူရှင်:</b> ${escapeHTML(name)}\n`;
+    captionText += `📍 <b>လိပ်စာ:</b> ${address ? escapeHTML(address) : "မဖော်ပြထားပါ"}\n`;
+    captionText += `✈️ <b>Telegram:</b> ${telegram ? escapeHTML(telegram) : "မဖော်ပြထားပါ"}\n`;
+    if (blessing) captionText += `✍️ <b>ဆုတောင်းလွှာ:</b> ${escapeHTML(blessing)}\n`;
+
+    const imageFile = fileInput.files[0];
+
+    requests = CLIENT_CHAT_IDS.map(chatId => {
+        const formData = new FormData();
+        formData.append('chat_id', chatId);
+        formData.append('photo', imageFile);
+        formData.append('caption', captionText);
+        formData.append('parse_mode', 'HTML'); // HTML သို့ ပြောင်းရန်
+
+        return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        });
+    });
+} else {
+    // --- ✉️ ပုံမပါလျှင်: HTML tag များဖြင့် ပြောင်းလဲခြင်း ---
+    let telegramText = `💌 <b>မင်္ဂလာဆုတောင်းလွှာ ရရှိပါသည်</b> 💌\n\n`;
+    telegramText += `👤 <b>ပေးပို့သူ:</b> ${escapeHTML(name)}\n`;
+    telegramText += `📍 <b>လိပ်စာ:</b> ${address ? escapeHTML(address) : "မဖော်ပြထားပါ"}\n`;
+    telegramText += `✈️ <b>Telegram:</b> ${telegram ?escapeHTML(telegram) : "မဖော်ပြထားပါ"}\n`;
+    telegramText += `✍️ <b>ဆုတောင်းစကား:</b> ${escapeHTML(blessing)}\n\n`;
+    telegramText += `💝 <i>(လက်ဖွဲ့ကြေးအား ပွဲနေ့တွင် ကိုယ်တိုင်ပေးအပ်မည် သို့မဟုတ် ဆုတောင်းလွှာသက်သက်ဖြစ်ပါသည်)</i>`;
+
+    requests = CLIENT_CHAT_IDS.map(chatId => {
+        return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: telegramText,
+                parse_mode: 'HTML' // HTML သို့ ပြောင်းရန်
+            })
+        });
+    });
+}
+
+    // Requests ပို့ဆောင်ခြင်း လုပ်ငန်းစဉ်
+    Promise.all(requests)
+    .then(responses => {
+        const allOk = responses.every(res => res.ok);
+        if (allOk) {
+            alert(`ပေးပို့ခြင်း အောင်မြင်ပါသည်။ ကျေးဇူးတင်ရှိပါသည် ခဗျာ။`);
+            
+            // Inputs များ ပြန်ရှင်းထုတ်ခြင်း
+            document.getElementById('gift-name').value = '';
+            document.getElementById('gift-address').value = '';
+            document.getElementById('gift-telegram').value = '';
+            document.getElementById('gift-blessing-text').value = '';
+            fileInput.value = '';
+            document.getElementById('file-name-lbl').innerText = "ရွေးချယ်ထားသော ပုံမရှိသေးပါ";
+            
+            closeActivePanel();
+        } else {
+            throw new Error('Telegram API Response Error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showGiftError("စနစ်ချို့ယွင်းမှု ရှိနေပါသည်။ Bot Info သို့မဟုတ် ဖြည့်စွက်ချက်များကို စစ်ဆေးပါ။");
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalBtnText;
+    });
+}
+function showGiftError(message) {
+    const errorEl = document.getElementById('gift-error');
+    errorEl.innerText = message;
+    errorEl.style.display = 'block';
+    gsap.fromTo(errorEl, { x: -10 }, { x: 10, duration: 0.1, repeat: 3, yoyo: true });
+}
+// Example ခလုတ်နှိပ်လျှင် စာသားတန်းထည့်ပေးသည့် Function
+function quickWish(wishText) {
+    const textarea = document.getElementById('gift-blessing-text');
+    textarea.value = wishText;
+    
+    // Smooth Effect ဖြစ်အောင် GSAP နဲ့ Textarea ကို နည်းနည်း Highlight လုပ်ပြမယ်
+    gsap.fromTo(textarea, { backgroundColor: "#F4EFE6" }, { backgroundColor: "#ffffff", duration: 0.4 });
+}
+// HTML Character များကို Safe ဖြစ်အောင် Escape လုပ်ပေးသည့် Function
+function escapeHTML(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+    </script>
+</body>
+</html>
