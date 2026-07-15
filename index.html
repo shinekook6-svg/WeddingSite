@@ -725,9 +725,18 @@
         }
         window.addEventListener('resize', resetViewportHeight);
         resetViewportHeight();
-
         // --- PRELOAD LOGIC ---
-        const assetsToLoad = ['MainWeddingP.jpg'];
+        // ⚠️ ပုံတွေနဲ့ သီချင်းဖိုင် အားလုံးကို Loader ထဲ ထည့်လိုက်တာပါ
+        const assetsToLoad = [
+            'MainWeddingP.jpg',
+            'Wedding1.jpg',
+            'Wedding2.jpg',
+            'Wedding3.jpg',
+            'Wedding4.jpg',
+            'Wedding5.jpg',
+            'WeddingSong.mp3'
+        ];
+        
         let loadedCount = 0;
         let realProgress = 0;
         let fakeProgress = 0;
@@ -737,13 +746,21 @@
 
         gsap.to("#karo-text", { opacity: 1, y: 0, duration: 1, delay: 0.2 });
 
+        // ⚠️ Image ကော Audio ပါ အဆင်ပြေပြေ Load ဆွဲနိုင်အောင် ပြင်ဆင်ထားတဲ့ Function
         function startPreloader() {
             if (totalAssets === 0) { showContinueButton(); return; }
             assetsToLoad.forEach(path => {
-                const img = new Image();
-                img.src = path;
-                img.onload = assetLoaded;
-                img.onerror = assetLoaded;
+                if (path.endsWith('.mp3')) {
+                    const audio = new Audio();
+                    audio.src = path;
+                    audio.oncanplaythrough = assetLoaded;
+                    audio.onerror = assetLoaded; // Error တက်ရင်လည်း $0% မှာ ရပ်မနေစေရန်
+                } else {
+                    const img = new Image();
+                    img.src = path;
+                    img.onload = assetLoaded;
+                    img.onerror = assetLoaded;  // ပုံပျောက်နေရင်လည်း loader ကျော်သွားစေရန်
+                }
             });
         }
 
